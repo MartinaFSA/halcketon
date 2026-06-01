@@ -48,6 +48,13 @@ create table communication_logs (
   sent_at timestamptz default now()
 );
 
+create table subscription_plans (
+  id uuid primary key default gen_random_uuid(),
+  mercadopago_plan_id text not null,
+  amount numeric not null,
+  created_at timestamptz default now()
+);
+
 /*POLICIES*/
 
 create policy "authenticated users can read donors"

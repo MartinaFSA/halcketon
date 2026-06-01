@@ -3,7 +3,9 @@
 - [React]()
 - [Supabase]()
 - [Resend]()
+- [MercadoPago](https://www.mercadopago.com.ar/developers/es/docs/subscriptions/integration-configuration/subscription-associated-plan)
 - [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) con [Geist](https://vercel.com/font)
+- ngrok para testeo local
 
 ## Correr el proyecto en local
 - ``npm run dev
