@@ -1,0 +1,10 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Read|Bash",
+        "hooks": [{ "type": "command", "command": "node $PWD/.claude/hooks/read_hook.js" }]
+      }
+    ]
+  }
+}

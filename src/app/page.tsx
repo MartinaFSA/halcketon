@@ -1,8 +1,10 @@
+import SubscriptionForm from "@/components/testing/SubscriptionForm";
+
 export default function Home() {
   return (
     <div>
       <main>
-        <h1>Plataforma ONG</h1>
+        <SubscriptionForm />
       </main>
     </div>
   );
