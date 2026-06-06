@@ -1,8 +1,7 @@
 create table profiles (
-  id uuid primary key
-    references auth.users(id),
+  id uuid primary key references auth.users(id),
   full_name text,
-  role text default 'admin',
+  role text default 'donor',
   created_at timestamptz default now()
 );
 
@@ -16,9 +15,6 @@ create table donors (
   cancelled_at timestamptz,
   cancellation_reason text
 );
-
-alter table donors
-enable row level security;
 
 create table subscriptions (
   id uuid primary key default gen_random_uuid(),
@@ -55,28 +51,96 @@ create table subscription_plans (
   created_at timestamptz default now()
 );
 
-/*POLICIES*/
+alter table donors
+  add column user_id uuid
+  references auth.users(id)
+  unique;
 
-create policy "authenticated users can read donors"
+alter table profiles
+add column email text unique;
+
+/*RLS*/
+alter table donors enable row level security;
+alter table profiles enable row level security;
+alter table subscriptions enable row level security;
+alter table payments enable row level security;
+alter table communication_logs enable row level security;
+alter table subscription_plans enable row level security;
+
+/*FUNCTIONS*/
+create or replace function public.is_admin()
+  returns boolean
+  language sql
+  security definer
+  as $$
+    select exists (
+      select 1
+      from profiles
+      where id = auth.uid()
+      and role = 'admin'
+    );
+$$;
+
+create or replace function public.cancel_subscription()
+  returns void
+  language plpgsql
+  security definer
+  as $$
+  begin
+    update donors
+    set
+      cancelled_at = now(),
+      cancellation_reason = 'Solicitada por usuario'
+    where user_id = auth.uid();
+  end;
+$$;
+
+
+/*POLICIES*/
+create policy "admins can read donors"
 on donors
 for select
 to authenticated
-using (true);
+using (public.is_admin());
 
-create policy "authenticated users can insert donors"
-on donors
-for insert
-to authenticated
-with check (true);
-
-create policy "authenticated users can update donors"
+create policy "admins can update donors"
 on donors
 for update
 to authenticated
-using (true);
+using (public.is_admin());
 
-create policy "authenticated users can delete donors"
+create policy "admins can insert donors"
+on donors
+for insert
+to authenticated
+with check (public.is_admin());
+
+create policy "admins can delete donors"
 on donors
 for delete
 to authenticated
-using (true);
+using (public.is_admin());
+
+create policy "users can view own profile"
+on profiles
+for select
+using (
+  auth.uid() = id
+);
+
+create policy "donor can read self"
+on donors
+for select
+to authenticated
+using (
+  user_id = auth.uid()
+);
+
+create policy "donor can update self"
+on donors
+for update
+to authenticated
+using (
+  user_id = auth.uid()
+  and not public.is_admin()
+);

@@ -4,15 +4,23 @@ import { useState } from "react";
 export default function DonatePage() {
   const [amount, setAmount] = useState("5000");
 
-  console.log("TOKEN EXISTS",
-    !!process.env.MP_PLAN_5000
-  );
-
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
 
   async function handleDonate() {
+    await fetch("/api/donors", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        firstName,
+        lastName,
+        email,
+      }),
+    });
+
     const response = await fetch(
       "/api/mercadopago",
       {
@@ -32,8 +40,7 @@ export default function DonatePage() {
 
     const data = await response.json();
 
-    window.location.href =
-      data.checkoutUrl;
+    window.location.href = data.checkoutUrl;
   }
 
   return (
@@ -76,6 +83,7 @@ export default function DonatePage() {
       <button
         onClick={handleDonate}
         className="bg-blue-600 text-white p-2 mt-4 w-full"
+        style={{ cursor: "pointer" }}
       >
         Donar
       </button>
